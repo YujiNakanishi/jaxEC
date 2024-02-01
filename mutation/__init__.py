@@ -1,1 +1,1 @@
-from jaxEC.mutation import real
+from jaxEC.mutation import real, binary
