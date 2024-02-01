@@ -42,3 +42,30 @@ def FPS(key, solution, fitness, selection_num):
     survivor = jax.random.choice(key, solution, (selection_num,), p = probability, axis = 0)
 
     return survivor
+
+
+@partial(jit, static_argnames = ["selection_num", "k"])
+def tournament(key, solution, fitness, selection_num, k):
+    """
+    output solution by tournament
+
+    input:
+        solution -> <jnp:num:(N, D)> list of individual
+                    N -> <int> number of individual
+                    D -> <int> dim of individual
+        fitness -> <jnp:num:(N, )> fitness value of each individuals
+        selection_num -> <int> number of selected individuals
+        key -> a PRNG key
+        k -> <int> number of matching individual
+    output:
+        survivor -> <jnp:num:(selection_num, D)> greatest solution
+    """
+
+    selected_index = jnp.zeros(selection_num).astype(int)
+    for i in range(selection_num):
+        player_index = jax.random.choice(key, len(solution), (k,))
+        selected_index = selected_index.at[i].set(player_index[jnp.argmin(fitness[player_index])])
+
+        key, subkey = jax.random.split(key)
+
+    return solution[selected_index]
