@@ -2,19 +2,21 @@ import jax.numpy as jnp
 from jax import jit
 import jax
 
-def gauss(key, sigma, solution_num, dim):
+@jit
+def gauss(key, solution, sigma):
     """
     output gaussian noise for mutation
 
     input:
         key -> PRNG key
+        solution -> <jnp:num:(N, D)>
         sigma -> <float> standard deviation
         shape -> <tuple> (N, D)
     
     output:
-        <jnp:float:shape>
+        <jnp:float:shape> mutated solution
     """
-    return sigma*jax.random.normal(key, (solution_num, dim))
+    return solution + sigma*jax.random.normal(key, solution.shape)
 
 @jit
 def selfAdaptive(key, solution, epsilon, generation):
