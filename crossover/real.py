@@ -53,3 +53,37 @@ def linear(key, solution, fitness_function):
     fitness = jnp.stack((fit1, fit2, fit3), axis = 1) #(N/2, 3)
     
     return getTwo_linear(fitness, offspring)
+
+@jit
+def _BLX_alpha(key, father, mother, alpha):
+    """
+    sub function for BLX_alpha
+    """
+    center = 0.5*(father + mother) #(N/2, D)
+    delta = jnp.abs(father - mother)
+
+    u1 = jax.random.uniform(key, center.shape)
+    key, subkey = jax.random.split(key)
+    u2 = jax.random.uniform(key, center.shape)
+
+    offspring1 = center+(2.*u1-1.)*(0.5+alpha)*delta #(N/2, D)
+    offspring2 = center+(2.*u2-1.)*(0.5+alpha)*delta
+
+    return jnp.concatenate((offspring1, offspring2))
+
+
+def BLX_alpha(key, solution, alpha = 0.5):
+    """
+    create offsprings by BLX_alpha
+
+    input:
+        key, solution -> as usual
+        alpha -> <float> hyper parameter
+    
+    output:
+        <jnp:num:(N, D)> new solution
+    """
+    father, mother = util.split(key, solution, 2)
+    key, subkey = jax.random.split(key)
+
+    return _BLX_alpha(key, father, mother, alpha)
