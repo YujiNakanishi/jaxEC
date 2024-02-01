@@ -43,8 +43,15 @@ def FPS(key, solution, fitness, selection_num):
 
     return survivor
 
+@partial(jit, static_argnames = ["k"])
+def _tournament(key, fitness, k):
+    """
+    sub function for tournament.
+    The reason why I split is to use jit efficiently
+    """
+    player_index = jax.random.choice(key, len(fitness), (k,))
+    return player_index[jnp.argmin(fitness[player_index])]
 
-@partial(jit, static_argnames = ["selection_num", "k"])
 def tournament(key, solution, fitness, selection_num, k):
     """
     output solution by tournament
@@ -63,9 +70,7 @@ def tournament(key, solution, fitness, selection_num, k):
 
     selected_index = jnp.zeros(selection_num).astype(int)
     for i in range(selection_num):
-        player_index = jax.random.choice(key, len(solution), (k,))
-        selected_index = selected_index.at[i].set(player_index[jnp.argmin(fitness[player_index])])
-
+        selected_index = selected_index.at[i].set(_tournament(key, fitness, k))
         key, subkey = jax.random.split(key)
 
     return solution[selected_index]
