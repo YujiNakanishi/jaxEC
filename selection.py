@@ -38,7 +38,7 @@ def FPS(key, solution, fitness, selection_num):
     output:
         survivor -> <jnp:num:(selection_num, D)> greatest solution
     """
-    probability = fitness/jnp.sum(fitness)
+    probability = 1./(fitness*jnp.sum(1./fitness))
     survivor = jax.random.choice(key, solution, (selection_num,), p = probability, axis = 0)
 
     return survivor
