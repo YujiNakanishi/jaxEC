@@ -5,12 +5,12 @@ import jax
 @jit
 def gauss(key, solution, sigma):
     """
-    output gaussian noise for mutation
+    output mutated solution by gaussian
 
     input:
         key -> PRNG key
         solution -> <jnp:num:(N, D)>
-        sigma -> <float> standard deviation
+        sigma -> <float|jnp:num:(D, )> standard deviation
         shape -> <tuple> (N, D)
     
     output:
@@ -21,7 +21,7 @@ def gauss(key, solution, sigma):
 @jit
 def selfAdaptive(key, solution, epsilon, generation):
     """
-    output mutation noise by self adaptive method
+    output mutated solution by self adaptive method
 
     input:
         key -> PRNG key
@@ -51,7 +51,7 @@ def selfAdaptive(key, solution, epsilon, generation):
 @jit
 def selfAdaptive_vector(key, solution, epsilon, generation):
     """
-    output mutation noise by self adaptive vector method
+    output mutated solution by self adaptive vector method
 
     input:
         key -> PRNG key
@@ -83,3 +83,34 @@ def selfAdaptive_vector(key, solution, epsilon, generation):
     representation += sigma*jax.random.normal(key, representation.shape)
 
     return jnp.concatenate((representation, sigma), axis = 1)
+
+
+def Rechenberg(key, solution, fitness_function, sigma, c = 0.05, ps = 0.2):
+    """
+    output mutated solution and updated sigma by Rechenberg
+
+    input:
+        key -> PRNG key
+        solution -> <jnp:num:(N, D)>
+        fitness_function -> <vmap function> function for calculating fitness
+            input:<jnp:num:(D, )>
+            output:<scalar>
+        sigma -> same with gauss
+        c, ps -> <float> hyper param (default value is what is recommended in the book)
+    
+    output:
+        mutation -> <jnp:float:(N, D)> mutated solution
+        sigma -> updated sigma
+    """
+    solution_fitness = fitness_function(solution)
+
+    mutation = gauss(key, solution, sigma)
+    mutation_fitness = fitness_function(mutation)
+    improved_probability = jnp.sum(mutation_fitness < solution_fitness)/len(solution_fitness)
+
+    if improved_probability > ps:
+        sigma *=c
+    else:
+        sigma /=c
+    
+    return mutation, sigma
