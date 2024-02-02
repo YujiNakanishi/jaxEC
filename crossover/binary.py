@@ -27,3 +27,24 @@ def one_pointX(key, solution):
     offspring = jnp.stack(offspring1 + offspring2)
 
     return offspring
+
+
+
+@jit
+def uniform(key, solution, pc = 0.5):
+    """
+    uniform crossover
+
+    input:
+        pc -> <float> cross over ratio
+    """
+    father, mother = util.split(key, solution, 2) #(N/2, D)
+    key, subkey = jax.random.split(key)
+    mask = (jax.random.uniform(key, father.shape) < pc).astype(int)
+
+    offs1 = father*mask + mother*(mask == 0)
+    offs2 = mother*mask + father*(mask == 0)
+
+    offspring = jnp.concatenate((offs1, offs2))
+
+    return offspring
