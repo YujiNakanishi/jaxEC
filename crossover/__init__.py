@@ -1,1 +1,1 @@
-from jaxEC.crossover import real
+from jaxEC.crossover import real, binary
